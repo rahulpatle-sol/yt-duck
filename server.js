@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 📂 Default Download Folder (system Downloads dir)
+// 📂 Default Download Folder
 const DEFAULT_DOWNLOAD_PATH = path.join(os.homedir(), "Downloads");
 
 /* ===================================================
@@ -29,9 +29,14 @@ app.post("/info", async (req, res) => {
       return res.status(400).json({ error: "❌ Invalid YouTube URL" });
     }
 
-    const info = await ytdl.getInfo(url);
+    const info = await ytdl.getInfo(url, {
+      requestOptions: {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        },
+      },
+    });
 
-    // 🎥 Video formats
     const videoFormats = ytdl.filterFormats(info.formats, "video").map((f) => ({
       quality: f.qualityLabel || "Unknown",
       itag: f.itag,
@@ -43,7 +48,6 @@ app.post("/info", async (req, res) => {
         : "Unknown",
     }));
 
-    // 🎵 Audio formats
     const audioFormats = ytdl.filterFormats(info.formats, "audioonly").map((f) => ({
       bitrate: f.audioBitrate + " kbps",
       itag: f.itag,
@@ -60,8 +64,8 @@ app.post("/info", async (req, res) => {
       audioFormats,
     });
   } catch (err) {
-    console.error("❌ /info error:", err);
-    res.status(500).json({ error: "Failed to fetch info" });
+    console.error("❌ /info error:", err.message);
+    res.status(err.statusCode || 500).json({ error: err.message || "Failed to fetch info" });
   }
 });
 
@@ -80,7 +84,7 @@ app.get("/stream/audio", async (req, res) => {
     res.setHeader("Content-Type", "audio/m4a");
     ytdl(url, { format }).pipe(res);
   } catch (err) {
-    console.error("❌ /stream/audio error:", err);
+    console.error("❌ /stream/audio error:", err.message);
     res.status(500).send("Audio streaming failed");
   }
 });
@@ -100,13 +104,12 @@ app.get("/stream/video", async (req, res) => {
     res.setHeader("Content-Type", "video/mp4");
     ytdl(url, { format }).pipe(res);
   } catch (err) {
-    console.error("❌ /stream/video error:", err);
+    console.error("❌ /stream/video error:", err.message);
     res.status(500).send("Video streaming failed");
   }
 });
 
 // 📥 DOWNLOAD
-// 📥 DOWNLOAD (fixed for mobile & desktop)
 app.post("/download", async (req, res) => {
   try {
     const { url, itag } = req.body;
@@ -121,23 +124,21 @@ app.post("/download", async (req, res) => {
     const safeTitle = info.videoDetails.title.replace(/[<>:"/\\|?*]+/g, "");
     const fileName = `${safeTitle}.${format.container}`;
 
-    // 📱 For mobile → send as attachment (browser saves itself)
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     res.setHeader("Content-Type", format.mimeType || "application/octet-stream");
 
-    // Pipe stream directly to response
     ytdl(url, { format }).pipe(res);
-
   } catch (err) {
-    console.error("❌ /download error:", err);
+    console.error("❌ /download error:", err.message);
     res.status(500).json({ error: "Download failed" });
   }
 });
 
-/* ===================================================
-   🔵 FRONTEND SERVE
-=================================================== */
-app.use(express.static("public")); // Always at the end
+// 🟢 Keep-alive ping for Render
+app.get("/ping", (req, res) => res.send("pong"));
+
+// 🔵 Serve frontend
+app.use(express.static("public"));
 
 // 🚀 Start server
 const PORT = process.env.PORT || 3000;
