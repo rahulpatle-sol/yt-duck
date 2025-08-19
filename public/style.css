@@ -1,0 +1,106 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top, #0f0f0f, #050505);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.app-container {
+  background: rgba(20, 20, 20, 0.9);
+  padding: 30px;
+  border-radius: 20px;
+  width: 450px;
+  text-align: center;
+  box-shadow: 0 0 40px #00ffea55;
+}
+
+.title {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 15px #00ffe5, 0 0 25px #00ffe5;
+}
+
+.input-box {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+}
+
+button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 10px;
+  background: #00ffe5;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  background: #00b3a3;
+}
+
+.panel {
+  background: #111;
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: 10px;
+  box-shadow: 0 0 15px #00ffe550;
+}
+
+.panel button {
+  margin: 5px 0;
+  width: 100%;
+}
+
+/* Loader animation */
+.loader {
+  border: 5px solid #222;
+  border-top: 5px solid #00ffe5;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  margin: 20px auto;
+  animation: spin 1s linear infinite;
+}
+.hidden {
+  display: none;
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* Downloading loader */
+.downloading-loader {
+  width: 100%;
+  height: 8px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+.downloading-loader::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -50%;
+  height: 100%; width: 50%;
+  background: linear-gradient(90deg, transparent, #00ffe5, transparent);
+  animation: loadmove 1.5s infinite;
+}
+@keyframes loadmove {
+  100% { left: 100%; }
+}

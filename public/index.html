@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YMusic Gaming Edition 🎶</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: url('https://wallpaperaccess.com/full/2925401.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #00ffcc;
+      text-align: center;
+      padding: 20px;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: -1;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-shadow: 0 0 10px #00ffcc, 0 0 20px #ff00ff;
+      margin-bottom: 20px;
+    }
+
+    input, select, button {
+      padding: 12px;
+      border: none;
+      outline: none;
+      border-radius: 10px;
+      margin: 10px;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    input {
+      width: 70%;
+      background: #1a1a2e;
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff00ff, #00ffff);
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 15px #00ffff;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px #ff00ff, 0 0 40px #00ffff;
+    }
+
+    #info {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(0,0,0,0.6);
+      border: 2px solid #ff00ff;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #00ffcc;
+      display: none;
+    }
+nav{
+  background: #ffffff44;
+  width: 100%;
+  height: 4dvh;
+  
+
+ box-shadow: 0 0 20px #8424c4;
+ 
+  
+;
+}
+    #thumbnail {
+      width: 200px;
+      border-radius: 10px;
+      margin: 10px 0;
+      box-shadow: 0 0 20px #ff00ff;
+    }
+
+    /* 🎵 Audio Player */
+    .player-container {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+    }
+    audio, video {
+      width: 80%;
+      border-radius: 12px;
+      outline: none;
+      background: #111;
+      box-shadow: 0 0 20px #00ffff, 0 0 40px #ff00ff;
+    }
+
+    select {
+      width: 50%;
+      background: #1a1a2e;
+      color: #00ffcc;
+      border: 2px solid #00ffcc;
+    }
+    select option {
+      background: #1a1a2e;
+      color: #00ffcc;
+    }
+
+    .glow-text {
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+
+<img src="" alt="">
+<ul>
+
+
+</ul>
+
+  </nav>
+  <h1 class="glow-text">⚡ YMusic Gaming Edition ⚡</h1>
+  <img src="https://i.ibb.co/ZVh01dm/controller.png" width="120" alt="Logo" />
+
+  <input id="urlInput" placeholder="🎮 Enter YouTube URL..." />
+  <br>
+  <button id="getInfo">🚀 Get Formats</button>
+
+  <div id="info">
+    <h2 id="title"></h2>
+    <img id="thumbnail" src="" alt="Thumbnail"/>
+
+    <br>
+    <select id="formatSelect"></select>
+    <br>
+
+    <button id="dlVideo">🎬 Download Video</button>
+    <button id="dlAudio">🎵 Download Audio</button>
+    <button id="playAudio">▶️ Play Audio</button>
+    <button id="playVideo">🎥 Play Video</button>
+
+    <div class="player-container">
+      <audio id="audioPlayer" controls></audio>
+    </div>
+    <div class="player-container">
+      <video id="videoPlayer" controls></video>
+    </div>
+  </div>
+
+  <script>
+    const urlInput = document.getElementById("urlInput");
+    const getInfoBtn = document.getElementById("getInfo");
+    const infoBox = document.getElementById("info");
+    const titleEl = document.getElementById("title");
+    const thumbEl = document.getElementById("thumbnail");
+    const formatSelect = document.getElementById("formatSelect");
+    const dlVideoBtn = document.getElementById("dlVideo");
+    const dlAudioBtn = document.getElementById("dlAudio");
+    const playAudioBtn = document.getElementById("playAudio");
+    const playVideoBtn = document.getElementById("playVideo");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const videoPlayer = document.getElementById("videoPlayer");
+
+    let currentUrl = "";
+    let audioFormats = [];
+    let videoFormats = [];
+
+    // 🚀 Get video/audio info
+    getInfoBtn.addEventListener("click", async () => {
+      const url = urlInput.value.trim();
+      if (!url) return alert("⚠️ Please enter a URL!");
+
+      try {
+        const res = await fetch("/info", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+        if (data.error) return alert(data.error);
+
+        currentUrl = url;
+        titleEl.textContent = data.title;
+        thumbEl.src = data.thumbnail;
+
+        videoFormats = data.videoFormats;
+        audioFormats = data.audioFormats;
+
+        formatSelect.innerHTML = `
+          <optgroup label="🎥 Video">
+            ${videoFormats.map(f => `<option value="v-${f.itag}">${f.quality} (${f.size})</option>`).join("")}
+          </optgroup>
+          <optgroup label="🎵 Audio">
+            ${audioFormats.map(f => `<option value="a-${f.itag}">${f.bitrate} (${f.size})</option>`).join("")}
+          </optgroup>
+        `;
+
+        infoBox.style.display = "block";
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to fetch video info");
+      }
+    });
+
+    // 🎬 Download Video
+    dlVideoBtn.addEventListener("click", async () => {
+      const selected = formatSelect.value;
+      if (!selected.startsWith("v-")) return alert("⚠️ Select a video format!");
+      const itag = selected.split("-")[1];
+
+      const res = await fetch("/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: currentUrl, itag })
+      });
+
+      const data = await res.json();
+      alert(`🎬 Download started: ${data.file}\n📂 Saved to: ${data.path}`);
+    });
+
+    // 🎵 Download Audio
+    dlAudioBtn.addEventListener("click", async () => {
+      const selected = formatSelect.value;
+      if (!selected.startsWith("a-")) return alert("⚠️ Select an audio format!");
+      const itag = selected.split("-")[1];
+
+      const res = await fetch("/download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: currentUrl, itag })
+      });
+
+      const data = await res.json();
+      alert(`🎵 Download started: ${data.file}\n📂 Saved to: ${data.path}`);
+    });
+
+    // ▶️ Play Audio
+    playAudioBtn.addEventListener("click", () => {
+      const selected = formatSelect.value;
+      if (!selected.startsWith("a-")) return alert("⚠️ Select an audio format to preview!");
+      const itag = selected.split("-")[1];
+
+      audioPlayer.src = `/stream/audio?url=${encodeURIComponent(currentUrl)}&itag=${itag}`;
+      audioPlayer.play();
+    });
+
+    // 🎥 Play Video
+    playVideoBtn.addEventListener("click", () => {
+      const selected = formatSelect.value;
+      if (!selected.startsWith("v-")) return alert("⚠️ Select a video format to preview!");
+      const itag = selected.split("-")[1];
+
+      videoPlayer.src = `/stream/video?url=${encodeURIComponent(currentUrl)}&itag=${itag}`;
+      videoPlayer.style.display = "block";
+      videoPlayer.play();
+    });
+
+    // Error handling
+    audioPlayer.addEventListener("error", () => {
+      alert("❌ Failed to play audio. Try a different format.");
+    });
+    videoPlayer.addEventListener("error", () => {
+      alert("❌ Failed to play video. Try a different format.");
+    });
+  </script>
+
+  <footer style="margin-top:40px; font-size:0.9rem; color:#888;">
+    🚀 Built Open-Source for Developers | <span style="color:#ff00ff;">YMusic Gaming Edition</span>
+  </footer>
+</body>
+</html>
